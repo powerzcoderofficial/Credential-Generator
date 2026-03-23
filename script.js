@@ -82,7 +82,7 @@ function generateAutoAvatar(nameText, hexColor) {
 }
 
 // =========================================================================
-// APP INITIALIZATION (Fetches JSON, Ignores Keys starting with "_")
+// APP INITIALIZATION
 // =========================================================================
 document.addEventListener('DOMContentLoaded', async () => {
     const credSelect = document.getElementById('credType');
@@ -155,7 +155,7 @@ function switchCredentialType(forceReroll = false) {
 }
 
 // =========================================================================
-// CARD RENDERER (Now supports 6 dynamic layout designs)
+// CARD RENDERER 
 // =========================================================================
 function updatePreview() {
     const type = document.getElementById('credType').value;
@@ -180,9 +180,6 @@ function updatePreview() {
 
     card.className = "card glass";
     
-    // -------------------------------------------------------------
-    // LAYOUT 1: BANK (Credit Cards / Crypto Wallets)
-    // -------------------------------------------------------------
     if (config.layout === 'bank') {
         card.style.width = '480px'; card.style.height = '280px'; card.style.flexDirection = 'column';
         let hugeNumber = "XXXX XXXX XXXX XXXX";
@@ -212,9 +209,6 @@ function updatePreview() {
             </div>
         `;
     } 
-    // -------------------------------------------------------------
-    // LAYOUT 2: VERTICAL (Student IDs, Event Badges, Access Cards)
-    // -------------------------------------------------------------
     else if (config.layout === 'vertical') {
         card.style.width = '320px'; card.style.height = '500px'; card.style.flexDirection = 'column';
         card.innerHTML = `
@@ -235,12 +229,8 @@ function updatePreview() {
             </div>
         `;
     } 
-    // -------------------------------------------------------------
-    // LAYOUT 3: SECURE (Law Enforcement, Cyber Identity)
-    // -------------------------------------------------------------
     else if (config.layout === 'secure') {
         card.style.width = '480px'; card.style.height = 'auto'; card.style.minHeight = '300px'; card.style.flexDirection = 'column';
-        // Give it a dossier/cyberpunk feel with monospace font and a grid overlay
         card.innerHTML = `
             <div class="hologram-overlay"></div>
             <div style="position:absolute; top:0; left:0; width:100%; height:100%; background-image: radial-gradient(${config.color} 1px, transparent 1px); background-size: 20px 20px; opacity: 0.1; pointer-events: none; z-index:1;"></div>
@@ -270,9 +260,6 @@ function updatePreview() {
             </div>
         `;
     }
-    // -------------------------------------------------------------
-    // LAYOUT 4: PASSPORT (Travel Docs, Visas)
-    // -------------------------------------------------------------
     else if (config.layout === 'passport') {
         card.style.width = '480px'; card.style.height = 'auto'; card.style.minHeight = '320px'; card.style.flexDirection = 'column';
         let mrzString = `P<XXX${firstUserInput.toUpperCase().replace(/\s/g, '<')}<<<<<<<<<<<<<<<<<<`;
@@ -296,9 +283,6 @@ function updatePreview() {
             <div style="position: absolute; right: 15px; top: 70px; z-index:2;" id="qrcode"></div>
         `;
     }
-    // -------------------------------------------------------------
-    // LAYOUT 5: MINIMAL (Modern, clean, lots of whitespace)
-    // -------------------------------------------------------------
     else if (config.layout === 'minimal') {
         card.style.width = '480px'; card.style.height = 'auto'; card.style.minHeight = '260px'; card.style.flexDirection = 'column'; card.style.background = 'rgba(255,255,255,0.03)'; card.style.border = 'none';
         card.innerHTML = `
@@ -315,9 +299,6 @@ function updatePreview() {
             <div style="position: absolute; bottom: 20px; right: 20px; z-index:2;" id="qrcode"></div>
         `;
     }
-    // -------------------------------------------------------------
-    // LAYOUT 6: STANDARD (Default for IDs, Driver Licenses)
-    // -------------------------------------------------------------
     else {
         card.style.width = '480px'; card.style.height = 'auto'; card.style.minHeight = '300px'; card.style.flexDirection = 'column';
         card.innerHTML = `
@@ -368,14 +349,41 @@ function updateQR(dataObj, hexColor) {
 }
 
 function toggleBW() { document.getElementById('credentialCard').classList.toggle('bw-mode'); }
+
+// =========================================================================
+// DOWNLOAD CARD - FIX: Added solid background so text remains visible!
+// =========================================================================
 function downloadCard() {
     const card = document.getElementById('credentialCard');
-    card.style.transform = "none"; card.style.boxShadow = "none";
-    html2canvas(card, { backgroundColor: null, scale: 3, useCORS: true, logging: false }).then(canvas => {
-        const link = document.createElement('a'); link.download = `${document.getElementById('credType').value.replace(' ', '_')}.png`; link.href = canvas.toDataURL("image/png"); link.click();
-        card.style.transform = ""; card.style.boxShadow = "";
+    const isBW = card.classList.contains('bw-mode');
+    
+    // Save original styles
+    const originalTransform = card.style.transform;
+    const originalBoxShadow = card.style.boxShadow;
+    
+    card.style.transform = "none"; 
+    card.style.boxShadow = "none";
+    
+    // Force a solid background for the image download so white text doesn't vanish on transparent PNGs.
+    const bgColorToUse = isBW ? '#ffffff' : '#0f172a'; // Matches your app's dark theme body background
+
+    html2canvas(card, { 
+        backgroundColor: bgColorToUse, 
+        scale: 3, 
+        useCORS: true, 
+        logging: false 
+    }).then(canvas => {
+        const link = document.createElement('a'); 
+        link.download = `${document.getElementById('credType').value.replace(/ /g, '_')}.png`; 
+        link.href = canvas.toDataURL("image/png"); 
+        link.click();
+        
+        // Restore styles
+        card.style.transform = originalTransform; 
+        card.style.boxShadow = originalBoxShadow;
     });
 }
+
 function downloadQR() {
     const qrCanvas = document.querySelector('#qrcode canvas');
     if (qrCanvas) { const link = document.createElement('a'); link.download = 'credential-qr.png'; link.href = qrCanvas.toDataURL(); link.click(); }
