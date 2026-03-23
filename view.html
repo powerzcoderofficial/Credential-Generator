@@ -1,0 +1,88 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify | CredGen</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="animated-bg centered">
+    <div id="verifyContainer" class="glass verification-card">
+        <h2 style="color: white; opacity: 0.8;">Verifying Cryptographic Signature...</h2>
+    </div>
+
+    <script>
+        function generateFallbackAvatar(nameText, hexColor) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 150; canvas.height = 150;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = hexColor || "#6366f1"; ctx.fillRect(0, 0, 150, 150);
+            ctx.fillStyle = "#ffffff"; ctx.font = "bold 60px Inter";
+            ctx.textAlign = "center"; ctx.textBaseline = "middle";
+            const initials = nameText && nameText !== "---" ? nameText.substring(0, 2).toUpperCase() : "ID";
+            ctx.fillText(initials, 75, 75);
+            return canvas.toDataURL();
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const container = document.getElementById('verifyContainer');
+            const urlParams = new URLSearchParams(window.location.search);
+            const qParam = urlParams.get('q'); // The compressed QR payload
+
+            if (!qParam) {
+                container.innerHTML = `<h2 class="error" style="color:#ef4444;">No Data Provided</h2><p>Please scan a valid CredGen QR code.</p>`;
+                return;
+            }
+
+            try {
+                // 1. Fetch the master JSON so we know the labels and colors
+                const response = await fetch('credentials.json');
+                const CREDENTIAL_DB = await response.json();
+
+                // 2. Decode the compressed QR array
+                const decodedStr = decodeURIComponent(escape(atob(qParam)));
+                const payload = JSON.parse(decodedStr);
+                
+                const type = payload.t;
+                const values = payload.v;
+                const config = CREDENTIAL_DB[type];
+
+                if (!config) throw new Error("Unknown Credential Type");
+
+                // Set Theme Color
+                document.documentElement.style.setProperty('--primary', config.color);
+
+                // 3. Map the array values back to their original labels
+                let infoHtml = '';
+                let firstVal = values[0] || "ID";
+
+                config.fields.forEach((field, index) => {
+                    const val = values[index] || "---";
+                    infoHtml += `<div class="v-row"><span>${field.name}:</span> <strong>${val}</strong></div>`;
+                });
+
+                // 4. Render the Verification Screen
+                container.innerHTML = `
+                    <div class="v-status">
+                        <div class="status-dot pulse"></div>
+                        <h2>VERIFIED CREDENTIAL</h2>
+                    </div>
+                    <div class="v-body">
+                        <img src="${generateFallbackAvatar(firstVal, config.color)}" class="v-photo" style="box-shadow: 0 0 20px ${config.color}80; border: 4px solid ${config.color};">
+                        <div class="v-type" style="color: ${config.color};">${type}</div>
+                        <div class="v-details">${infoHtml}</div>
+                    </div>
+                    <a href="index.html" class="btn btn-primary" style="margin-top:20px; width:100%;">Create Your Own</a>
+                `;
+
+            } catch (e) {
+                console.error(e);
+                container.innerHTML = `
+                    <h2 class="error" style="color:#ef4444; font-size:1.8rem; margin-bottom:10px;">INVALID SIGNATURE</h2>
+                    <p style="opacity:0.8;">The QR code is corrupted or unrecognized by the system.</p>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>

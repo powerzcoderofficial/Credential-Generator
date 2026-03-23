@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generator | CredGen</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body class="animated-bg">
+    <nav class="navbar">
+        <a href="index.html" class="logo">Cred<span>Gen</span></a>
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="generator.html" class="active">Generator</a>
+        </div>
+    </nav>
+
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar glass" id="sidebar">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                <h3 style="font-size: 1.2rem;">Configuration</h3>
+                <button class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;" onclick="generateAutoData(true)">🎲 Re-roll IDs</button>
+            </div>
+            
+            <div class="input-group">
+                <label>Credential Type</label>
+                <!-- This dropdown is now AUTOMATICALLY populated by the JSON in script.js -->
+                <select id="credType"></select>
+            </div>
+
+            <div id="dynamicInputs" style="display: flex; flex-direction: column; gap: 1rem;">
+                <!-- Inputs generated dynamically from JSON -->
+            </div>
+
+            <div class="input-group" style="margin-top: 0.5rem;">
+                <label>Custom Photo</label>
+                <input type="file" id="photoInput" accept="image/*" onchange="handlePhoto(this)">
+            </div>
+
+            <div class="button-stack">
+                <button class="btn btn-secondary" onclick="toggleBW()">Toggle B&W Mode</button>
+                <button class="btn btn-primary" onclick="downloadCard()">Download Card Image</button>
+                <button class="btn btn-outline" onclick="downloadQR()">Download QR Code</button>
+            </div>
+        </aside>
+
+        <!-- Preview Area -->
+        <main class="preview-area">
+            <div class="card glass" id="credentialCard">
+                <!-- Injected dynamically -->
+            </div>
+        </main>
+    </div>
+    <footer style="text-align: center; padding: 1rem;margin-top: 2rem; background-color: #111; color: #8d8d8d;">&copy 2025 - Present. <strong><a href="https://powerz.vercel.app" style="text-decoration: none; color: blue;">Shivansh Acharya.</a></strong> All Rights Reserved.</footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
